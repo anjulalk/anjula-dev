@@ -1,7 +1,5 @@
-@font-face {
-  font-family: 'Press Start 2P';
-  src: url('../fonts/PressStart2P-Regular.ttf');
-}
-
 @import 'variables';
 @import 'scaffolding';
+
+@import '@picocss/pico/css/pico.slim.css';
+@import url('https://fonts.googleapis.com/css2?family=PT+Mono&display=swap');

@@ -43,6 +43,6 @@
     "url": "git@github.com:anjulalk/anjula-dev.git"
   },
   "dependencies": {
-    "nes.css": "^2.3.0"
+    "@picocss/pico": "^1.5.0"
   }
 }

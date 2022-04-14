@@ -2,29 +2,57 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge" />
-
   <title>
     <%= htmlWebpackPlugin.options.title %>
   </title>
+  <meta name="description" content="Personal website of Anjula Karunarathne">
+  <link rel="shortcut icon" href="https://anjula.dev/favicon.ico">
+  <link rel="canonical" href="https://anjula.dev/">
 </head>
 
 <body>
-  <canvas></canvas>
-  <div class="container">
-    <div class="nes-container is-rounded is-dark container">
-      <section class="intro">
-        Hello!
-        My name is Anjula Karunarathne and I build things for the web.
-      </section>
-      <section class="links">
-        <a class="nes-btn" href="https://github.com/anjulalk" target="_blank">GitHub</a>
-        <a class="nes-btn" href="https://www.linkedin.com/in/anjulalk" target="_blank">LinkedIn</a>
-        <a class="nes-btn" href="https://photos.anjula.dev/" target="_blank">Gallery</a>
-      </section>
-    </div>
+  <header class="container">
+    <hgroup>
+      <h1 id="site-header">anjula.dev</h1>
+    </hgroup>
+  </header>
+  <main class="container">
+    <section id="site-intro">
+      <h2 id="console-header">
+        <div class='console-container'>
+          <span id='text'>HELLO!</span>
+          <div class='console-underscore' id='console'>_</div>
+        </div>
+      </h2>
+      <p>
+        I'm Anjula Karunarathne. I've
+        <a target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/anjulalk">worked</a>
+        on a wide range of projects from small startups to large enterprise applications, and
+        I love building things that make people's lives easier.
+      </p>
+      <p>
+        You'll often see my
+        <a target="_blank" rel="noopener noreferrer" href="https://github.com/anjulalk">projects</a>
+        built using JavaScript, but I am comfortable working on Node.js, TypeScript, (S)CSS,
+        Python, Java & <s>PHP</s> (I used to be) and other random web technologies.
+        I am a big fan of JavaScript frameworks, Webpack, and similar tools.
+        Nowadays, I'm messing around with ReactJs, Redux, Next.js, Vue.js & Angular.
+      </p>
+      <p>
+        I'm currently reading for my bachelor's degree
+        <a target="_blank" rel="noopener noreferrer" href="https://ucsc.cmb.ac.lk/">@UCSC</a>,
+        and also trying out a bit of
+        <a target="_blank" rel="noopener noreferrer" href="https://anjula.dev/photos">photography</a>
+        as well.
+      </p>
+    </section>
+  </main>
+  <footer class="container">
+    <span id="site-footer">Built with ❤ by Anjula Karunarathe | hello@this-domain.dev</span>
+  </footer>
 </body>
 
 </html>

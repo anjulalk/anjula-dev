@@ -1,26 +1,41 @@
-html {
-  height: 100vh;
+* {
+  font-family: $font-custom-family, monospace;
 }
 
-body {
-  display: grid;
-  place-content: center;
-  height: 100%;
-  background: $background-color;
+#site-intro p,
+#site-footer,
+#site-header {
+  font-size: $font-custom-size;
 }
 
-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
+.hidden {
+  opacity: 0;
 }
 
-.container {
-  margin: 32px;
-  max-width: $page-width;
-  z-index: 1;
+.console-container {
+  display: block;
+  margin: auto;
 }
 
-.intro {
-  margin-bottom: 16px
+.console-underscore {
+  display: inline-block;
+  position: relative;
+}
+
+#console-header {
+  text-shadow: 0.06rem 0 0.06rem #ea36af, -0.125rem 0 0.06rem #75fa69;
+  animation-duration: 0.01s;
+  animation-name: textflicker;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+@keyframes textflicker {
+  from {
+    text-shadow: 1px 0 0 #ea36af, -2px 0 0 #75fa69;
+  }
+
+  to {
+    text-shadow: 2px 0.5px 2px #ea36af, -1px -0.5px 2px #75fa69;
+  }
 }
