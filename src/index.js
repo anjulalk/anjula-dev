@@ -1,4 +1,5 @@
-import '@/styles/index.scss'
-import consoleText from './consoleText'
+import '@/styles/index.scss';
+import { startConsole } from './console';
+import { Greetings } from './js/constants';
 
-consoleText(['HELLO!', 'ආයුබෝවන්!'], 'text')
+startConsole([Greetings.ENGLISH, Greetings.SINHALA, Greetings.TAMIL], 'text');

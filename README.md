@@ -4,35 +4,22 @@
 
 Personal website built with Webpack, Babel, SASS and PostCSS
 
-### Installation
+### Development
 
 You know what to do.
 
 ```bash
-npm i
-```
-
-### Development server
-
-```bash
+npm install
 npm start
 ```
 
 You can view the development server at `localhost:8080`.
 
-### Production build
+### Production
 
 ```bash
 npm run build
 ```
-
-### Features
-
-- [webpack](https://webpack.js.org/)
-- [Babel](https://babeljs.io/)
-- [Sass](https://sass-lang.com/)
-- [PostCSS](https://postcss.org/)
-
 ### Dependencies
 
 #### webpack

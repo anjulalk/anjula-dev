@@ -4,9 +4,9 @@ module.exports = {
   // Source files
   src: path.resolve(__dirname, '../src'),
 
-  // Production build files
+  // Production build
   build: path.resolve(__dirname, '../dist'),
 
-  // Static files that get copied to build folder
+  // Static files copied to production build
   public: path.resolve(__dirname, '../public'),
 }
