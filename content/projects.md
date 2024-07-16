@@ -5,4 +5,4 @@ menu = "main"
 
 # Projects
 
-N/A
+No projects yet
