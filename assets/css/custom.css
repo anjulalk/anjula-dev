@@ -194,6 +194,25 @@ header nav a[rel='me'] {
   text-decoration-color: rgba(var(--color-primary-300), 1);
 }
 
+/* Heading anchors: the theme colours the # from the heading ink, and every link
+   carries a 150ms colour transition, so the glyph drags through black on its way
+   to the accent. Start it at the accent instead and let the span's opacity do
+   the fade, which is the only motion it needs. Clay replaces the pale
+   primary-300 the theme picked. */
+:is(h1, h2, h3, h4, h5, h6) > span.not-prose > a {
+  color: rgba(var(--color-primary-600), 1);
+  transition: none;
+}
+:is(h1, h2, h3, h4, h5, h6) > span.not-prose > a:hover {
+  color: rgba(var(--color-primary-700), 1);
+}
+.dark :is(h1, h2, h3, h4, h5, h6) > span.not-prose > a {
+  color: rgba(var(--color-primary-400), 1);
+}
+.dark :is(h1, h2, h3, h4, h5, h6) > span.not-prose > a:hover {
+  color: rgba(var(--color-primary-300), 1);
+}
+
 /* Quotes carry a thin rule and read in italic, like a book. */
 .prose blockquote {
   border-inline-start-width: 3px;
