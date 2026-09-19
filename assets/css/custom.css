@@ -133,6 +133,13 @@ div.my-1 a.rounded-md.border::before {
   content: "#";
 }
 
+/* The homepage recents keep the title, the meta line and the blurb; the tag
+   pills are a browsing aid for the blog list, not for the homepage. The
+   .recent-articles wrapper comes from layouts/_partials/recent-articles.html. */
+.recent-articles article .my-1.flex.flex-wrap {
+  display: none;
+}
+
 /* Homepage Tetris rain: an ambient strip across the content column (not the
    full page), tall enough to read as weather rather than a band. The top mask
    is what makes pieces appear to fade in out of the page. */

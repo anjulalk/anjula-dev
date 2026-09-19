@@ -1,0 +1,11 @@
+{{/* Site override of Congo's recent-articles.html. The cards sit in a
+     .recent-articles wrapper so the homepage can drop the tag pills that the
+     blog list keeps; the rule lives in assets/css/custom.css. */}}
+{{ if .Site.Params.homepage.showRecent | default false }}
+  <h2 class="mt-8 text-2xl font-extrabold">{{ i18n "shortcode.recent_articles" | emojify }}</h2>
+  <div class="recent-articles">
+    {{ range first .Site.Params.homepage.recentLimit (.Paginate (where .Site.RegularPages "Type" "in" .Site.Params.mainSections) .Site.Params.homepage.recentLimit).Pages }}
+      {{ partial "article-link.html" . }}
+    {{ end }}
+  </div>
+{{ end }}
