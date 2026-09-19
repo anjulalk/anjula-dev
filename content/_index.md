@@ -1,5 +1,3 @@
-# Hello there!👋 
+# Hello there!👋
 
-I'm Anjula Karunarathne, a software developer from Sri Lanka. I'm currently at [99x](https://99x.io), primarily working with C#, ASP.NET Core, JavaScript, and Azure Cloud. My focus revolves around developing large-scale enterprise applications, transforming ideas into functional solutions.
-
-Find me on [LinkedIn](https://linkedin.com/in/anjulalk) or [GitHub](https://github.com/anjulalk).
+I'm **Anjula Karunarathne**, a Microsoft Certified Azure AI Developer Associate working as an Associate Tech Lead from Colombo, Sri Lanka. With 4+ years building SaaS products across React, Vue.js, TypeScript, ASP.NET Core and SQL Server, I focus on AI adoption and AI-driven workflows on Azure cloud native setups, alongside delivery, releases and mentoring.
