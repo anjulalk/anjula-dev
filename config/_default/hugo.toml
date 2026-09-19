@@ -1,0 +1,61 @@
+# -- Site Configuration --
+# Personal website of Anjula Karunarathne (https://anjula.dev), Congo theme.
+# Refer to https://jpanther.github.io/congo/docs/configuration/ for theme options.
+
+baseURL = "https://anjula.dev"
+defaultContentLanguage = "en"
+theme = "congo"
+
+title = "Anjula Karunarathne"
+author = "Anjula Karunarathne"
+copyright = "Copyright © 2026, Anjula Karunarathne."
+
+# Generate a nice robots.txt for SEO
+enableRobotsTXT = true
+
+# Commit dates become .Lastmod, which the sitemap and structured data publish.
+enableGitInfo = true
+
+# Bearblog-like post URLs; tag terms live under /blog/, no taxonomy index
+disableKinds = ["taxonomy"]
+ignoreErrors = ["error-disable-taxonomy"]
+
+# Rebuild the CSS bundle whenever anything in assets/css changes. Without this
+# Hugo reuses the concatenated bundle from its resource cache, so palette or
+# custom.css edits silently do not show up.
+[build]
+  useResourceCacheWhen = 'fallback'
+
+  [[build.cachebusters]]
+    source = '(postcss|tailwind)\.config\.(js|mjs|cjs)'
+    target = '(css|styles|scss|sass)'
+
+  [[build.cachebusters]]
+    source = 'assets/css/.*'
+    target = '(css|styles|scss|sass)'
+
+[pagination]
+  pagerSize = 10
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+[permalinks]
+  blog = "/:slug/"
+  tags = "/blog/:slug"
+
+[privacy]
+  [privacy.vimeo]
+    enableDNT = true
+  [privacy.x]
+    enableDNT = true
+  [privacy.youTube]
+    privacyEnhanced = true
+
+[services]
+  [services.x]
+    disableInlineCSS = true
+
+[caches]
+  [caches.images]
+    dir = ':cacheDir/images'

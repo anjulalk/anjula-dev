@@ -1,0 +1,23 @@
+{{/* SEO: enrich the social card with real image dimensions and alt text.
+     Hugo's internal opengraph template emits only the URL for Params.images;
+     the article bundle's cover resource carries the actual 1200x630 size. */}}
+{{ if .IsPage }}
+  {{ with .Params.images }}
+    {{ with $.Resources.GetMatch "cover*" }}
+      <meta property="og:image:width" content="{{ .Width }}" />
+      <meta property="og:image:height" content="{{ .Height }}" />
+      <meta property="og:image:type" content="{{ .MediaType.Type }}" />
+      <meta property="og:image:alt" content="{{ $.Params.coverAlt | default $.Title | plainify }}" />
+      <meta name="twitter:image:alt" content="{{ $.Params.coverAlt | default $.Title | plainify }}" />
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* Typography: Source Serif 4 for the page-like reading face, Inter for the
+     interface, JetBrains Mono for code. Paired with assets/css/custom.css. */}}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap"
+  rel="stylesheet"
+/>

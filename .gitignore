@@ -1,0 +1,6 @@
+# Hugo build output; Hugo regenerates these on every build.
+public/
+resources/
+
+# Created by Hugo while a build is running.
+.hugo_build.lock

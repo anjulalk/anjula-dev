@@ -1,0 +1,37 @@
+# -- Language: English --
+locale = "en-US"
+label = "English"
+direction = "ltr"
+weight = 1
+
+title = "Anjula Karunarathne"
+
+[params]
+  dateFormat = "2 January 2006"
+  description = "Anjula Karunarathne is an Associate Tech Lead from Colombo, Sri Lanka and a Microsoft Certified Azure AI Developer Associate. Notes on C#, .NET, Azure, TypeScript and AI-driven workflows, plus projects and photography."
+  mainSections = ["blog"]
+  robots = "index, follow, max-image-preview:large, max-snippet:-1"
+  # Default social card for pages without their own image (home, lists).
+  images = ["images/share.png"]
+  keywords = [
+    "Anjula Karunarathne",
+    "software developer Sri Lanka",
+    "Associate Tech Lead",
+    "Azure AI Developer",
+    "ASP.NET Core",
+    "C#",
+    "TypeScript",
+    "React",
+    "Azure",
+    "AI workflows",
+  ]
+
+[params.author]
+  name = "Anjula Karunarathne"
+  image = "img/author.jpg"
+  headline = "Associate Tech Lead"
+  bio = "Building SaaS products with React, TypeScript and ASP.NET Core on Azure with a focus on AI-driven workflows."
+  links = [
+    { linkedin = "https://linkedin.com/in/anjulalk" },
+    { github = "https://github.com/anjulalk" },
+  ]

@@ -1,0 +1,240 @@
+/* Remove Tailwind Typography's default backtick quotes around inline code.
+   Congo picks up this file automatically (see themes/congo/layouts/_partials/head.html)
+   and bundles it after the main stylesheet, so these rules win. */
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::before,
+.prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::after {
+  content: none;
+}
+
+/* Vertically center icon-only menu links with the adjacent text menu items.
+   The nav list stretches each item to full row height, so the short icon
+   links stick to the top while text links fill their line box. Centering
+   the row items (desktop) plus inner flex alignment lines the icons up. */
+@media (min-width: 640px) {
+  header nav ul {
+    align-items: center;
+  }
+}
+header nav ul li a,
+header nav ul li button {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Flush-align the article author-box social buttons with the text above.
+   Each button and its icon span carry side padding, which indents the whole
+   row. Strip the leading padding on the first of each. */
+article footer .text-2xl .flex > a:first-child {
+  padding-left: 0;
+}
+article footer .text-2xl .flex > a:first-child .icon {
+  padding-left: 0;
+}
+
+/* Optical alignment for the tiny uppercase AUTHOR eyebrow: at 0.6rem the
+   cap letters overshoot their box and read as sticking out left. */
+article footer div.place-self-center > div:first-child {
+  padding-left: 1px;
+}
+
+/* Homepage portrait floats right of the intro text on wide screens,
+   stacks centered above it on mobile. */
+img.portrait {
+  float: right;
+  width: 220px;
+  border-radius: 9999px;
+  margin: 0 0 1rem 2rem;
+}
+@media (max-width: 640px) {
+  img.portrait {
+    float: none;
+    display: block;
+    width: 160px;
+    margin: 0 auto 1rem;
+  }
+}
+
+/* Photography filled mosaic: each row has a fixed height and is filled
+   edge to edge with no gaps. Images share the row by their inline
+   flex-grow ratio and crop to fit via object-fit. Uneven ratios and
+   varying row heights keep the grid irregular. */
+.photorow {
+  display: flex;
+}
+.photorow img {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin: 0;
+}
+@media (max-width: 640px) {
+  .photorow {
+    height: 220px !important;
+  }
+}
+
+/* JS-computed mosaic rows (see inline script on the photography page).
+   Kept separate from the static .photorow fallback above. */
+.photoset .grow {
+  display: flex;
+}
+.photoset .grow img {
+  margin: 0;
+  object-fit: cover;
+  object-position: center;
+  flex: none;
+  max-width: none;
+}
+div.max-w-prose:has(> div.photoset) {
+  max-width: 100%;
+}
+
+/* Each trip section is one rounded block; the clipping gives the whole
+   filled mosaic rounded outer corners. Vertical margins match what prose
+   gives bare images/figures (2em), so the grid breathes like body content. */
+.photoset {
+  border-radius: 1rem;
+  overflow: hidden;
+  margin-top: 2em;
+  margin-bottom: 2em;
+}
+
+/* Standardized tag pills: all lowercase with a # prefix. */
+div.my-1 a.rounded-md.border {
+  text-transform: lowercase;
+}
+div.my-1 a.rounded-md.border::before {
+  content: "#";
+}
+
+/* Homepage Tetris rain: an ambient strip across the content column (not the
+   full page), tall enough to read as weather rather than a band. The top mask
+   is what makes pieces appear to fade in out of the page. */
+.tetris-rain {
+  width: 100%;
+  margin-top: 4rem;
+  line-height: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 16%);
+}
+.tetris-rain canvas {
+  display: block;
+  width: 100%;
+  height: 450px;
+}
+@media (max-width: 640px) {
+  .tetris-rain canvas {
+    height: 330px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Paper theme (palette in assets/css/schemes/paper.css)
+   A printed-page reading face: serif for content, sans for the interface,
+   mono for code. Colors come from the scheme, so light and dark stay in step.
+   --------------------------------------------------------------------------- */
+
+:root {
+  --font-serif: 'Source Serif 4', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-code: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+body {
+  font-family: var(--font-ui);
+}
+
+/* Everything meant to be read, plus every heading, is a book serif. */
+.prose,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.011em;
+}
+
+/* The article title was set extrabold; serif reads better a step lighter. */
+h1.text-4xl {
+  font-weight: 700;
+}
+
+.prose h2,
+.prose h3 {
+  font-weight: 600;
+}
+
+/* A printed nameplate rather than an app title. */
+header nav a[rel='me'] {
+  font-family: var(--font-serif);
+}
+
+/* Links: a soft clay rule that firms up on hover. */
+.prose a {
+  text-decoration-color: rgba(var(--color-primary-400), 0.45);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.prose a:hover {
+  text-decoration-color: rgba(var(--color-primary-600), 1);
+}
+.dark .prose a:hover {
+  text-decoration-color: rgba(var(--color-primary-300), 1);
+}
+
+/* Quotes carry a thin rule and read in italic, like a book. */
+.prose blockquote {
+  border-inline-start-width: 3px;
+  font-style: italic;
+}
+
+/* Code: one mono stack everywhere, on a warmer surface with a hairline. */
+code,
+pre,
+kbd,
+samp,
+.chroma {
+  font-family: var(--font-code);
+}
+.chroma {
+  border: 1px solid rgba(var(--color-neutral-200), 1);
+}
+.dark .chroma {
+  border-color: rgba(var(--color-neutral-600), 1);
+}
+
+/* Rules and dividers stay hairline. */
+.prose hr {
+  border-color: rgba(var(--color-neutral-200), 1);
+}
+.dark .prose hr {
+  border-color: rgba(var(--color-neutral-600), 1);
+}
+
+/* Selection picks up the one warm colour in the palette. */
+::selection {
+  background: rgba(var(--color-primary-200), 1);
+  color: rgba(var(--color-neutral-900), 1);
+}
+.dark ::selection {
+  background: rgba(var(--color-primary-900), 1);
+  color: rgba(var(--color-neutral-50), 1);
+}
+
+/* The portrait in the article footer is treated like the rest of the page:
+   a warm sepia rather than a straight photograph, with a hairline ring so the
+   busy background does not bleed into the paper. Slightly dimmer in dark mode
+   so it does not glow against the warm charcoal. */
+article footer picture img {
+  filter: sepia(0.36) saturate(0.9) contrast(1.03) brightness(0.99);
+  box-shadow: 0 0 0 1px rgba(var(--color-neutral-200), 1);
+}
+.dark article footer picture img {
+  filter: sepia(0.3) saturate(0.8) contrast(1.06) brightness(0.9);
+  box-shadow: 0 0 0 1px rgba(var(--color-neutral-600), 1);
+}
+

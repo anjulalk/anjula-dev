@@ -1,0 +1,4 @@
+# -- Taxonomies --
+# Only tags (no categories) so the taxonomy index is exactly the Tags page.
+
+tag = "tags"
