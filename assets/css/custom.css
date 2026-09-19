@@ -194,23 +194,26 @@ header nav a[rel='me'] {
   text-decoration-color: rgba(var(--color-primary-300), 1);
 }
 
-/* Heading anchors: the theme colours the # from the heading ink, and every link
-   carries a 150ms colour transition, so the glyph drags through black on its way
-   to the accent. Start it at the accent instead and let the span's opacity do
-   the fade, which is the only motion it needs. Clay replaces the pale
-   primary-300 the theme picked. */
+/* Heading anchors: the theme colours the # from the heading ink, so the link's
+   150ms colour transition dragged the glyph through black before it reached the
+   accent. Hold the glyph at the accent instead, one colour in both modes, and
+   let opacity alone carry it: the theme's symmetrical 150ms fade reads as a
+   blink, so it leaves quickly on the fast duration and arrives on the reveal
+   duration. */
 :is(h1, h2, h3, h4, h5, h6) > span.not-prose > a {
   color: rgba(var(--color-primary-600), 1);
   transition: none;
 }
-:is(h1, h2, h3, h4, h5, h6) > span.not-prose > a:hover {
-  color: rgba(var(--color-primary-700), 1);
-}
 .dark :is(h1, h2, h3, h4, h5, h6) > span.not-prose > a {
   color: rgba(var(--color-primary-400), 1);
 }
-.dark :is(h1, h2, h3, h4, h5, h6) > span.not-prose > a:hover {
-  color: rgba(var(--color-primary-300), 1);
+:is(h1, h2, h3, h4, h5, h6) > span.not-prose {
+  /* Out: 150ms, accelerating away, so nothing is left smudged on the page. */
+  transition: opacity 150ms cubic-bezier(0.4, 0, 1, 1);
+}
+:is(h1, h2, h3, h4, h5, h6):hover > span.not-prose {
+  /* In: 240ms, settling, the same reveal the system uses elsewhere. */
+  transition: opacity 240ms cubic-bezier(0, 0, 0.2, 1);
 }
 
 /* Quotes carry a thin rule and read in italic, like a book. */
