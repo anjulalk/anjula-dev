@@ -196,16 +196,18 @@ header nav a[rel='me'] {
 
 /* Heading anchors: the theme colours the # from the heading ink, so the link's
    150ms colour transition dragged the glyph through black before it reached the
-   accent. Hold the glyph at the accent instead, one colour in both modes, and
-   let opacity alone carry it: the theme's symmetrical 150ms fade reads as a
-   blink, so it leaves quickly on the fast duration and arrives on the reveal
-   duration. */
+   accent. Its group-hover utility (primary-300, or neutral-700 in dark) then
+   outranks a plain override, so the glyph ended the fade in one colour and
+   started the fade out in another. Pin the accent with !important for every
+   state, as the theme already does for the anchor's underline, then let opacity
+   alone carry it: the theme's symmetrical 150ms fade reads as a blink, so it
+   leaves quickly on the fast duration and arrives on the reveal duration. */
 :is(h1, h2, h3, h4, h5, h6) > span.not-prose > a {
-  color: rgba(var(--color-primary-600), 1);
+  color: rgba(var(--color-primary-600), 1) !important;
   transition: none;
 }
 .dark :is(h1, h2, h3, h4, h5, h6) > span.not-prose > a {
-  color: rgba(var(--color-primary-400), 1);
+  color: rgba(var(--color-primary-400), 1) !important;
 }
 :is(h1, h2, h3, h4, h5, h6) > span.not-prose {
   /* Out: 150ms, accelerating away, so nothing is left smudged on the page. */
