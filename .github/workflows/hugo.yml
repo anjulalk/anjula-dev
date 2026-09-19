@@ -115,11 +115,13 @@ jobs:
       - name: Build
         run: |
           echo "Building the project..."
+          # The base URL comes from config/_default/hugo.toml. Overriding it with
+          # the Pages output would publish http:// URLs in the sitemap, og:url
+          # and og:image on a site that is served over https.
           hugo build \
             --gc \
             --minify \
             --cleanDestinationDir \
-            --baseURL "${{ steps.pages.outputs.base_url }}/" \
             --cacheDir "${{ runner.temp }}/.cache/hugo"
 
       - name: Check the build output
