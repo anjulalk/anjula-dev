@@ -1,0 +1,661 @@
+{{/* Site homepage: Congo's standard page layout plus an ambient Tetris rain
+     after the Recents section. The strip is sized by CSS; the canvas keeps a
+     smooth, continuous fall (float positions, delta time) rather than snapping
+     cell by cell, and each piece fades in as it enters from the top.
+
+     The brain is a two-ply search: every placement of every piece is scored
+     on the board it would leave behind, and the best few are explored one
+     piece further so the animation sets up line clears instead of raining
+     pieces at random. The floor starts with rows that are one piece short of
+     complete, so the clears start early and stay visible. */}}
+{{ define "main" }}
+  {{ partial "home/page.html" . }}
+  <div class="tetris-rain"><canvas id="tetris-rain" aria-hidden="true"></canvas></div>
+  <script>
+  (function () {
+    var canvas = document.getElementById('tetris-rain');
+    if (!canvas || !canvas.getContext) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var ctx = canvas.getContext('2d');
+
+    // 40px cells give a 23 x 11 playfield at the strip's size: rows complete
+    // often enough to watch, and the blocks stay large. Measured at 17 clears
+    // a minute against 13 with 32px cells.
+    var TARGET_CELL = 40;
+    var COLS = 0, ROWS = 0, CELL = TARGET_CELL;
+    var grid = null;          // settled blocks, flat Int8Array, 0 empty else shade + 1
+    var work = null;          // grid plus the pieces already falling, for planning
+    var board = null;         // whichever of the two the helpers below act on
+    var saved = null;         // scratch copy for the search
+    var preClear = null;      // rows as they were before the last clear, for the animation
+    var full = null, effCells = null, heights = null; // scratch for scoring
+    var stats = { clears: 0, resets: 0, placed: 0 }; // exposed to the test probe
+    var pieces = [];
+    var activeClear = null;   // the clear being animated, if any
+    var lanes = 5;
+    var pending = 0;          // spawns queued, one per frame, to spread the search cost
+    var last = 0;
+    var visible = true;
+    var grain = null;
+
+    var SHAPES = [
+      [[0, 0], [1, 0], [2, 0], [3, 0]], // I
+      [[0, 0], [1, 0], [0, 1], [1, 1]], // O
+      [[1, 0], [0, 1], [1, 1], [2, 1]], // T
+      [[1, 0], [2, 0], [0, 1], [1, 1]], // S
+      [[0, 0], [1, 0], [1, 1], [2, 1]], // Z
+      [[0, 0], [0, 1], [1, 1], [2, 1]], // J
+      [[2, 0], [0, 1], [1, 1], [2, 1]]  // L
+    ];
+
+    // Paper chips: a soft gradient top to bottom, a light top edge and a
+    // darker bottom edge so each block reads as a printed piece, not a slab.
+    var PAPER = {
+      light: [
+        { top: '#f7f4ec', bot: '#e9e3d6' },
+        { top: '#ecdfcb', bot: '#d9c8ae' },
+        { top: '#eac5a9', bot: '#d8a681' },
+        { top: '#d3dcc9', bot: '#bcc9b0' },
+        { top: '#e3ded3', bot: '#cec7b7' }
+      ],
+      dark: [
+        { top: '#3a3833', bot: '#2b2925' },
+        { top: '#5b5140', bot: '#423a2e' },
+        { top: '#6d4a35', bot: '#4f3527' },
+        { top: '#49543f', bot: '#353d2e' },
+        { top: '#403e39', bot: '#2f2d29' }
+      ]
+    };
+
+    function isDark() {
+      return document.documentElement.classList.contains('dark') ||
+        (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    function palette() {
+      return isDark() ? PAPER.dark : PAPER.light;
+    }
+
+    /* ---------- board ---------- */
+
+    function at(x, y) {
+      return board[y * COLS + x];
+    }
+    function put(x, y, v) {
+      board[y * COLS + x] = v;
+    }
+    function rotate(cells) {
+      var r = cells.map(function (c) { return { x: -c.y, y: c.x }; });
+      var minX = Math.min.apply(null, r.map(function (c) { return c.x; }));
+      var minY = Math.min.apply(null, r.map(function (c) { return c.y; }));
+      return r.map(function (c) { return { x: c.x - minX, y: c.y - minY }; });
+    }
+    function shapeWidth(cells) {
+      return Math.max.apply(null, cells.map(function (c) { return c.x; })) + 1;
+    }
+    function shapeHeight(cells) {
+      return Math.max.apply(null, cells.map(function (c) { return c.y; })) + 1;
+    }
+    function collides(cells, px, py) {
+      for (var i = 0; i < cells.length; i++) {
+        var x = px + cells[i].x, y = py + cells[i].y;
+        if (x < 0 || x >= COLS) return true;
+        if (y >= ROWS) return true;
+        if (y >= 0 && at(x, y)) return true;
+      }
+      return false;
+    }
+    function landRow(cells, px) {
+      var y = -3;
+      while (!collides(cells, px, y + 1)) y++;
+      return y;
+    }
+    function stamp(cells, px, py, v) {
+      for (var i = 0; i < cells.length; i++) {
+        var x = px + cells[i].x, y = py + cells[i].y;
+        if (y >= 0 && y < ROWS) put(x, y, v);
+      }
+    }
+    function rowFull(y) {
+      var base = y * COLS;
+      for (var x = 0; x < COLS; x++) if (!board[base + x]) return false;
+      return true;
+    }
+    function countFullRows() {
+      var n = 0;
+      for (var y = 0; y < ROWS; y++) if (rowFull(y)) n++;
+      return n;
+    }
+
+    /** Removes full rows from the current board and returns how many went. */
+    function removeFullRows() {
+      var write = ROWS - 1, removed = [];
+      for (var y = ROWS - 1; y >= 0; y--) {
+        if (rowFull(y)) {
+          removed.push(y);
+        } else {
+          if (write !== y) board.copyWithin(write * COLS, y * COLS, (y + 1) * COLS);
+          write--;
+        }
+      }
+      for (var y2 = write; y2 >= 0; y2--) board.fill(0, y2 * COLS, (y2 + 1) * COLS);
+      return removed;
+    }
+
+    /* ---------- planning board ----------
+       A piece that is already falling has a reserved landing spot. The chooser
+       plans against the settled blocks plus those reservations, so five pieces
+       in flight never pick the same hole. */
+
+    function plan() {
+      board = work;
+      work.set(grid);
+      for (var i = 0; i < pieces.length; i++) {
+        var p = pieces[i];
+        stamp(p.cells, p.x, p.target, p.shade + 1);
+      }
+    }
+    function settle() {
+      board = grid;
+    }
+
+    /* ---------- scoring ----------
+       Rows that are already full are treated as gone, so a board is judged on
+       what would be left after the clears that are about to happen. */
+
+    function evaluate(lines) {
+      var holes = 0, bump = 0, agg = 0, maxH = 0, rowBonus = 0;
+      var y, x, i;
+
+      for (y = 0; y < ROWS; y++) full[y] = rowFull(y) ? 1 : 0;
+      effCells.fill(0);
+
+      for (x = 0; x < COLS; x++) {
+        var eff = -1, seen = false, h = 0, colHoles = 0;
+        for (y = ROWS - 1; y >= 0; y--) {
+          if (full[y]) continue;
+          eff++;
+          if (at(x, y)) {
+            if (!seen) { seen = true; h = eff + 1; }
+            if (eff < ROWS) effCells[eff]++;
+          } else if (seen) {
+            colHoles++;
+          }
+        }
+        heights[x] = h;
+        holes += colHoles;
+        agg += h;
+        if (h > maxH) maxH = h;
+      }
+      for (i = 0; i < COLS - 1; i++) bump += Math.abs(heights[i] - heights[i + 1]);
+      for (i = 0; i < ROWS; i++) { var n = effCells[i]; rowBonus += n * n; }
+
+      // The height penalty above is gentle, which is right for normal play but
+      // lets the stack drift into the ceiling and force a hard reset. This term
+      // only bites in the top three rows, so it changes nothing until a top out
+      // is actually close.
+      var danger = Math.max(0, maxH - (ROWS - 3));
+
+      return lines * 1000
+        - holes * 14
+        - bump * 0.9
+        - agg * 0.18
+        - maxH * 2.2
+        - danger * danger * 6
+        + rowBonus * 0.35;
+    }
+
+    /** Every distinct landing spot for every piece, rotations deduplicated. */
+    function placements() {
+      var out = [];
+      for (var s = 0; s < SHAPES.length; s++) {
+        var cells = SHAPES[s].map(function (c) { return { x: c[0], y: c[1] }; });
+        var seen = {};
+        for (var r = 0; r < 4; r++) {
+          if (r) cells = rotate(cells);
+          var key = cells
+            .map(function (c) { return c.x + ',' + c.y; })
+            .sort()
+            .join(';');
+          if (seen[key]) continue;
+          seen[key] = 1;
+          var w = shapeWidth(cells);
+          for (var x = 0; x <= COLS - w; x++) {
+            out.push({ cells: cells, x: x, shape: s });
+          }
+        }
+      }
+      return out;
+    }
+
+    // Four continuations is the sweet spot measured in the harness: as many
+    // clears as a deeper search, with a fraction of the worst frame cost.
+    var LOOKAHEAD = 4;
+
+    function chooseDrop() {
+      plan();
+      var list = placements();
+      var cands = [];
+      var i, j, p, y;
+
+      for (i = 0; i < list.length; i++) {
+        p = list[i];
+        y = landRow(p.cells, p.x);
+        if (y < 0) continue;
+        stamp(p.cells, p.x, y, 1);
+        var lines = countFullRows();
+        var score = evaluate(lines);
+        stamp(p.cells, p.x, y, 0);
+        cands.push({ p: p, y: y, score: score });
+      }
+      if (!cands.length) { settle(); return null; }
+      cands.sort(function (a, b) { return b.score - a.score; });
+
+      var best = null;
+      var top = Math.min(LOOKAHEAD, cands.length);
+      for (i = 0; i < top; i++) {
+        var cand = cands[i];
+        saved.set(board);
+        stamp(cand.p.cells, cand.p.x, cand.y, 1);
+        var firstLines = removeFullRows().length;
+
+        var bestNext = -Infinity;
+        for (j = 0; j < list.length; j++) {
+          p = list[j];
+          y = landRow(p.cells, p.x);
+          if (y < 0) continue;
+          stamp(p.cells, p.x, y, 1);
+          var totalLines = firstLines + countFullRows();
+          var s2 = evaluate(totalLines);
+          stamp(p.cells, p.x, y, 0);
+          if (s2 > bestNext) bestNext = s2;
+        }
+        board.set(saved);
+
+        // The continuation decides, with a nudge so identical boards do not
+        // always resolve to the same column.
+        var value = (bestNext === -Infinity ? cand.score : bestNext) + Math.random() * 4;
+        if (!best || value > best.value) {
+          best = {
+            value: value,
+            cells: cand.p.cells.map(function (c) { return { x: c.x, y: c.y }; }),
+            x: cand.p.x,
+            y: cand.y,
+            shade: Math.floor(Math.random() * PAPER.light.length)
+          };
+        }
+      }
+      settle();
+      return best;
+    }
+
+    /* ---------- pieces ---------- */
+
+    function spawn() {
+      var pick = chooseDrop();
+      if (!pick || pick.y < 0) { reset(); return; }
+      pieces.push({
+        cells: pick.cells,
+        x: pick.x,
+        y: -(shapeHeight(pick.cells) + 0.4 + Math.random() * 2),
+        target: pick.y,
+        // Rows per second: varied, so the fall never marches in lockstep.
+        vy: 2.6 + Math.random() * 2.8,
+        shade: pick.shade,
+        alpha: 0
+      });
+    }
+
+    function lock(p) {
+      stamp(p.cells, p.x, p.target, p.shade + 1);
+      // If a clear is being animated, the canvas is drawing rows as they were.
+      // Anything that lands meanwhile has to be drawn on top of that, or it
+      // would stay invisible until the animation ends and then pop in.
+      if (activeClear) {
+        for (var i = 0; i < p.cells.length; i++) {
+          var y = p.target + p.cells[i].y;
+          if (y < 0 || y >= ROWS) continue;
+          activeClear.extra.push({ x: p.x + p.cells[i].x, y: y, idx: p.shade });
+        }
+      }
+    }
+
+    function clearRows(now) {
+      // Keep the rows as they were so the clear can be animated: the finished
+      // row drops out of the bottom while everything above falls into the gap.
+      preClear.set(grid);
+      var removed = removeFullRows();
+      if (removed.length) startClear(removed, now);
+      // The stack just moved, so every piece still falling needs a new landing
+      // row. Recompute them one at a time and reserve each before the next, so
+      // they do not all pick the same hole again.
+      board = work;
+      work.set(grid);
+      for (var j = 0; j < pieces.length; j++) {
+        var q = pieces[j];
+        var t = landRow(q.cells, q.x);
+        q.target = t;
+        if (q.y > t) q.y = t;
+        stamp(q.cells, q.x, t, q.shade + 1);
+      }
+      settle();
+      stats.clears += removed.length;
+      return removed.length;
+    }
+
+    /* ---------- seeding ----------
+       Three rows that are one horizontal I piece short of complete. The search
+       finds them immediately, so the first clears land within seconds and the
+       rest of the run keeps building toward the next one. */
+
+    function seedRow(y, gapStart, gapWidth) {
+      for (var x = 0; x < COLS; x++) {
+        var inGap = x >= gapStart && x < gapStart + gapWidth;
+        put(x, y, inGap ? 0 : 1 + Math.floor(Math.random() * PAPER.light.length));
+      }
+    }
+
+    function reset() {
+      if (!grid) return;
+      board = grid;
+      grid.fill(0);
+      stats.resets++;
+      var gap = Math.min(4, Math.max(2, Math.floor(COLS / 7)));
+      var slots = Math.max(1, Math.floor(COLS / gap));
+      for (var s = 0; s < 3; s++) {
+        var start = Math.min(COLS - gap, (s * 2 + 1) * gap);
+        seedRow(ROWS - 1 - s, start, gap);
+        void slots;
+      }
+      pieces = [];
+      activeClear = null;
+      pending = lanes;   // spread across frames: the search is not free
+    }
+
+    /* ---------- sizing ---------- */
+
+    function size() {
+      var w = canvas.clientWidth, h = canvas.clientHeight;
+      if (!w || !h) return false;
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      var cols = Math.max(10, Math.round(w / TARGET_CELL));
+      var rows = Math.max(8, Math.floor(h / (w / cols)));
+      if (cols !== COLS || rows !== ROWS) {
+        COLS = cols;
+        ROWS = rows;
+        CELL = w / COLS;
+        grid = new Int8Array(ROWS * COLS);
+        work = new Int8Array(ROWS * COLS);
+        saved = new Int8Array(ROWS * COLS);
+        preClear = new Int8Array(ROWS * COLS);
+        full = new Uint8Array(ROWS);
+        effCells = new Int32Array(ROWS);
+        heights = new Int32Array(COLS);
+        board = grid;
+        // Fewer pieces fall on a small board, so a phone shows the same calm
+        // rain a laptop does instead of a downpour into a narrow well.
+        lanes = Math.min(5, Math.max(2, Math.round((cols * rows) / 50)));
+        reset();
+      }
+      return true;
+    }
+
+    /* ---------- paper shading ---------- */
+
+    function rounded(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
+    function makeGrain() {
+      var g = document.createElement('canvas');
+      g.width = 48;
+      g.height = 48;
+      var c = g.getContext('2d');
+      for (var i = 0; i < 900; i++) {
+        var v = Math.random() * 255;
+        c.fillStyle = 'rgba(' + v + ',' + v + ',' + v + ',0.5)';
+        c.fillRect(Math.random() * 48, Math.random() * 48, 1, 1);
+      }
+      grain = ctx.createPattern(g, 'repeat');
+    }
+
+    function block(x, y, size, idx, alpha, scale, tint, rot) {
+      var pal = palette();
+      var c = pal[idx % pal.length];
+      var r = Math.max(3, size * 0.16);
+      var pad = Math.max(0.75, size * 0.03);
+      var x0 = x + pad, y0 = y + pad, s = size - pad * 2;
+      var dark = isDark();
+
+      ctx.save();
+      if (rot || (scale && scale !== 1)) {
+        var cx = x + size / 2, cy = y + size / 2;
+        ctx.translate(cx, cy);
+        if (rot) ctx.rotate(rot);
+        if (scale && scale !== 1) ctx.scale(scale, scale);
+        ctx.translate(-cx, -cy);
+      }
+
+      ctx.globalAlpha = alpha;
+      rounded(x0, y0, s, s, r);
+      var grad = ctx.createLinearGradient(x0, y0, x0, y0 + s);
+      grad.addColorStop(0, c.top);
+      grad.addColorStop(1, c.bot);
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // A grain wash keeps the fill from looking like flat vector colour.
+      if (grain) {
+        ctx.save();
+        ctx.clip();
+        ctx.globalAlpha = alpha * (dark ? 0.10 : 0.07);
+        ctx.fillStyle = grain;
+        ctx.fillRect(x0, y0, s, s);
+        ctx.restore();
+      }
+
+      // Top light, bottom shade: the printed edge.
+      ctx.globalAlpha = alpha * (dark ? 0.10 : 0.5);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x0 + r * 0.6, y0 + 0.5);
+      ctx.lineTo(x0 + s - r * 0.6, y0 + 0.5);
+      ctx.stroke();
+
+      ctx.globalAlpha = alpha * (dark ? 0.35 : 0.12);
+      ctx.strokeStyle = '#000000';
+      ctx.beginPath();
+      ctx.moveTo(x0 + r * 0.6, y0 + s - 0.5);
+      ctx.lineTo(x0 + s - r * 0.6, y0 + s - 0.5);
+      ctx.stroke();
+
+      // A finished row is pressed in clay before it goes.
+      if (tint) {
+        ctx.globalAlpha = alpha * tint;
+        ctx.fillStyle = isDark() ? '#e79a6e' : '#c1603c';
+        rounded(x0, y0, s, s, r);
+        ctx.fill();
+      }
+
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
+
+    /**
+     * A clear is animated from the rows as they were. Each chip in a finished
+     * row tips and falls away on its own schedule, and the blocks above the gap
+     * fall into it one by one. Everything else stays where it is.
+     */
+    function startClear(removed, now) {
+      var doomed = [];
+      for (var r = 0; r < ROWS; r++) {
+        if (!isCleared(removed, r)) continue;
+        for (var x = 0; x < COLS; x++) {
+          var idx = preClear[r * COLS + x];
+          if (!idx) continue;
+          doomed.push({
+            x: x,
+            y: r,
+            idx: idx - 1,
+            delay: Math.random() * 0.22,
+            drift: (Math.random() - 0.5) * 0.9,
+            spin: (Math.random() - 0.5) * 0.7
+          });
+        }
+      }
+      activeClear = { removed: removed, doomed: doomed, extra: [], start: now, dur: 420 };
+    }
+
+    function isCleared(list, r) {
+      for (var i = 0; i < list.length; i++) if (list[i] === r) return true;
+      return false;
+    }
+
+    function clearedBelow(list, r) {
+      var n = 0;
+      for (var i = 0; i < list.length; i++) if (list[i] > r) n++;
+      return n;
+    }
+
+    /* ---------- frame ---------- */
+
+    function update(dt) {
+      if (pending > 0) {
+        pending--;
+        spawn();
+      }
+      var list = pieces.slice();
+      for (var i = list.length - 1; i >= 0; i--) {
+        var p = list[i];
+        if (pieces.indexOf(p) < 0) continue; // a reset replaced the board
+        p.y += p.vy * dt;
+        // Fade in over the first couple of rows, so nothing appears abruptly.
+        p.alpha = Math.max(0, Math.min(1, (p.y + 1.6) / 2.6));
+        if (p.y >= p.target) {
+          lock(p);
+          pieces.splice(pieces.indexOf(p), 1);
+          clearRows(performance.now());
+          spawn();
+        }
+      }
+      // Test probe: the harness asserts that no two falling pieces reserve the
+      // same cells. Harmless in the browser, where the flag is never set.
+      if (window.__tetrisProbe) window.__tetrisProbe(pieces, grid, ROWS, COLS, stats);
+    }
+
+    function draw(now) {
+      var w = canvas.clientWidth, h = canvas.clientHeight;
+      ctx.clearRect(0, 0, w, h);
+
+      var anim = activeClear;
+      var p = 0;
+      if (anim) {
+        p = (now - anim.start) / anim.dur;
+        if (p >= 1) {
+          activeClear = null;
+          anim = null;
+        }
+      }
+
+      if (anim) {
+        // Blocks below the clear do not move, the blocks above it fall into the
+        // gap one by one, each chip of the finished row tips away on its own,
+        // and anything that landed mid-animation is drawn last so it never
+        // disappears and pops back.
+        var r, x, idx, q, e, below, delay, settle, i;
+
+        for (i = 0; i < anim.doomed.length; i++) {
+          var d = anim.doomed[i];
+          q = (p - d.delay) / (1 - d.delay);
+          if (q < 0) q = 0;
+          if (q > 1) q = 1;
+          e = q * q;
+          block(
+            (d.x + d.drift * e) * CELL,
+            (d.y + 1.2 * e) * CELL,
+            CELL,
+            d.idx,
+            Math.max(0, 1 - q * 1.8),
+            1 - 0.25 * e,
+            0.55 * e,
+            d.spin * e
+          );
+        }
+
+        for (r = 0; r < ROWS; r++) {
+          if (isCleared(anim.removed, r)) continue;
+          below = clearedBelow(anim.removed, r);
+          for (x = 0; x < COLS; x++) {
+            idx = preClear[r * COLS + x];
+            if (!idx) continue;
+            delay = Math.min(0.22, (below / ROWS) * 0.12 + (x / COLS) * 0.08);
+            q = (p - delay) / (1 - delay);
+            if (q < 0) q = 0;
+            if (q > 1) q = 1;
+            e = q * q;
+            settle = q > 0.86 ? Math.sin(((q - 0.86) / 0.14) * Math.PI) * 0.035 : 0;
+            block(x * CELL, (r + below * e + settle) * CELL, CELL, idx - 1, 1);
+          }
+        }
+
+        for (i = 0; i < anim.extra.length; i++) {
+          var ex = anim.extra[i];
+          block(ex.x * CELL, ex.y * CELL, CELL, ex.idx, 1);
+        }
+      } else {
+        var y, x3, idx4;
+        for (y = 0; y < ROWS; y++) {
+          for (x3 = 0; x3 < COLS; x3++) {
+            idx4 = at(x3, y);
+            if (idx4) block(x3 * CELL, y * CELL, CELL, idx4 - 1, 1);
+          }
+        }
+      }
+
+      pieces.forEach(function (piece) {
+        piece.cells.forEach(function (c) {
+          var yy = piece.y + c.y;
+          if (yy < -1) return;
+          block((piece.x + c.x) * CELL, yy * CELL, CELL, piece.shade, piece.alpha);
+        });
+      });
+    }
+
+    function frame(now) {
+      requestAnimationFrame(frame);
+      if (!visible || document.hidden) { last = now; return; }
+      var dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      update(dt);
+      draw(now);
+    }
+
+    var resizeTimer;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () { size(); }, 200);
+    });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        visible = entries[0].isIntersecting;
+      }).observe(canvas);
+    }
+
+    makeGrain();
+    if (size()) {
+      last = performance.now();
+      requestAnimationFrame(frame);
+    }
+  })();
+  </script>
+{{ end }}
