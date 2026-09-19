@@ -84,8 +84,10 @@ Rules:
 - Letterspacing: `-0.011em` on serif headings, `0.07em` on uppercase mono or sans eyebrows.
 - Numbers that are compared sit in mono with tabular figures.
 - Do not mix a fourth family in. Emoji are allowed in content, not in chrome.
-- Footers and headers are chrome: Inter, small (`--text-sm`), in `--ink-500`, with no rules dividing
-  them from the page. Neither project draws a hairline above its footer.
+- A header title is chrome, not a nameplate: Inter 600 at `--text-xl`, with the menu at Inter 500 and
+  `--text-sm`. A serif title reads smaller than the sans menu beside it.
+- Footers are chrome: Inter, small (`--text-sm`), in `--ink-500`, with no rule dividing them from the
+  page. Neither project draws a hairline above its footer.
 
 Only these weights are loaded: Inter 400, 500 and 600; JetBrains Mono 400 and 500; Source Serif 4
 400, 600 and 700 upright, plus 400 italic. No sans in the system uses 700, so interface text never

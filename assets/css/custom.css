@@ -200,9 +200,22 @@ h6 {
    for prose headings, 600 for inline code. Only the family and the colour are
    ours to change. */
 
-/* A printed nameplate rather than an app title. */
+/* Header chrome, in the system's two sizes: the site title is the largest thing
+   in the header (Inter 600 at --text-xl) and the menu sits below it (Inter 500
+   at --text-sm). The title used to be serif at body size, so it read smaller
+   than the sans menu beside it, which is what made the mobile header look
+   upside down. */
 header nav a[rel='me'] {
-  font-family: var(--font-serif);
+  font-family: var(--font-ui);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.011em;
+}
+
+header nav ul {
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 /* Links: a soft clay rule that firms up on hover. */
