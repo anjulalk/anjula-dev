@@ -11,10 +11,7 @@
   pageRef = "projects"
   weight = 20
 
-[[main]]
-  name = "Photography"
-  pageRef = "photography"
-  weight = 25
+# Photography is drafted until the real photographs are in place.
 
 [[main]]
   name = "GitHub"

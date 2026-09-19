@@ -5,6 +5,8 @@ showDate = false
 showReadingTime = false
 showAuthor = false
 showPagination = false
+# Held back until the real photographs are in place. Remove this line to publish.
+draft = true
 +++
 
 <!-- Placeholder photos for layout. Replace the files under
