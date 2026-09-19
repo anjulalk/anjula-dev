@@ -1,0 +1,76 @@
+/* anjula.dev design tokens for Tailwind v4
+   Paste into a stylesheet after `@import 'tailwindcss';`. The system is
+   documented in DESIGN.md; the plain custom properties live in tokens.css. */
+
+@theme {
+  /* Surfaces */
+  --color-paper: #faf8f3;
+  --color-card: #ffffff;
+  --color-wash: #f4f2ec;
+  --color-hair: #f0ede4;
+  --color-line: #dfdbd0;
+
+  /* Ink */
+  --color-ink: #44403a;
+  --color-mute: #5f5a51;
+  --color-soft: #767064;
+  --color-faint: #948e80;
+
+  /* Accents */
+  --color-clay: #c1603c;
+  --color-clay-strong: #9e4a2d;
+  --color-clay-soft: #e7966e;
+  --color-moss: #78876a;
+  --color-up: #157a58;
+  --color-down: #b3323f;
+  --color-gold: #8a6309;
+
+  /* A project may add domain aliases that point at a core value, never new
+     colours. fxtrack uses these three:
+       --color-brand: var(--color-clay);
+       --color-buy: var(--color-clay-strong);
+       --color-sell: var(--color-up); */
+
+  /* Type */
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Source Serif 4', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Space, 4px scale */
+  --spacing: 0.25rem;
+
+  /* Shape. Custom names, so Tailwind's own scale is not remapped: what
+     tokens.css calls --radius is --radius-md here, and --radius-lg is
+     --radius-card. */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-card: 0.875rem;
+
+  /* The one allowed shadow, for a raised app card. */
+  --shadow-card: 0 1px 2px rgb(28 27 23 / 0.04), 0 8px 24px -12px rgb(28 27 23 / 0.08);
+
+  /* Motion */
+  --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Dark mode reads the same names, so markup needs no colour variants. */
+.dark {
+  --color-paper: #282622;
+  --color-card: #2f2d29;
+  --color-wash: #33312c;
+  --color-hair: #3a3833;
+  --color-line: #5b564c;
+
+  --color-ink: #f4f2ec;
+  --color-mute: #cdc8bb;
+  --color-soft: #948e80;
+  --color-faint: #767064;
+
+  --color-clay: #e7966e;
+  --color-clay-strong: #d97757;
+  --color-clay-soft: #c1603c;
+  --color-moss: #98a688;
+  --color-up: #6cc4a1;
+  --color-down: #e08d92;
+  --color-gold: #d3b45c;
+}

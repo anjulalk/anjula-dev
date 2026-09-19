@@ -129,6 +129,8 @@ jobs:
           echo "Checking the built site..."
           test -f public/index.html
           test -f public/sitemap.xml
+          test -f public/design/tokens.css
+          test -f public/design/tailwind-theme.css
           grep -q "Sitemap:" public/robots.txt
           grep -q "og:image" public/index.html
           echo "pages: $(find public -name '*.html' | wc -l)"
