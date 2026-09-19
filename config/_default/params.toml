@@ -41,7 +41,7 @@ fingerprintAlgorithm = "sha256"
   invertPagination = false
   showReadingTime = true
   showTableOfContents = false
-  showTaxonomies = true
+  showTaxonomies = false
   showWordCount = false
   showComments = false
 
@@ -49,7 +49,7 @@ fingerprintAlgorithm = "sha256"
   showBreadcrumbs = false
   showSummary = true
   showTableOfContents = false
-  showTaxonomies = true
+  showTaxonomies = false
   groupByYear = true
   paginationWidth = 1
 
