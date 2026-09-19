@@ -13,7 +13,8 @@
 //
 // Notes:
 //   - Renders SVG -> PNG with @resvg/resvg-js (prebuilt binary, no build tools).
-//     Install it where this script can resolve it:  npm i -D @resvg/resvg-js
+//     Install it with  npm i -D @resvg/resvg-js  , or point RESVG_MODULE at an
+//     existing install (a package specifier or a file URL).
 //   - Windows needs explicit font files; Georgia for the mark and wordmark,
 //     Consolas for the small mono captions.
 //   - The ICO is written by hand (PNG entries in an ICO container), because
@@ -25,9 +26,11 @@ import { fileURLToPath } from 'node:url'
 
 let Resvg
 try {
-  ;({ Resvg } = await import('@resvg/resvg-js'))
+  ;({ Resvg } = await import(process.env.RESVG_MODULE ?? '@resvg/resvg-js'))
 } catch {
-  console.error('error: @resvg/resvg-js is not installed (npm i -D @resvg/resvg-js)')
+  console.error(
+    'error: @resvg/resvg-js not found. Install it (npm i -D @resvg/resvg-js) or set RESVG_MODULE.',
+  )
   process.exit(1)
 }
 
