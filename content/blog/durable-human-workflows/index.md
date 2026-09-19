@@ -3,6 +3,7 @@ title = "Durable workflows for human waits"
 slug = "durable-human-workflows"
 date = 2026-09-17T12:00:00+05:30
 description = "A workflow that stops to ask a person a question is hard to keep alive. Durable orchestration records the wait and resumes it without a hand-rolled state machine."
+summary = "Durable orchestration records a human wait and resumes it without a hand-rolled state machine."
 tags = ["dotnet", "azure", "distributed-systems", "workflow-automation"]
 draft = false
 images = ["images/durable-human-workflows.png"]

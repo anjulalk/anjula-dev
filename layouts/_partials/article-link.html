@@ -76,9 +76,12 @@
       {{ partial "article-meta.html" . }}
     </div>
     {{ if .Params.showSummary | default (.Site.Params.list.showSummary | default false) }}
-      <div class="prose py-1 dark:prose-invert">
-        {{ .Summary | emojify }}
-      </div>
+      {{/* A blurb, in preference order: a summary written for the card, the
+           description the article already carries, then Hugo's auto excerpt,
+           which can cut a sentence in half. */}}
+      {{ with .Params.summary | default .Description | default .Summary }}
+        <div class="prose py-1 dark:prose-invert">{{ . | emojify }}</div>
+      {{ end }}
     {{ end }}
   </div>
 </article>

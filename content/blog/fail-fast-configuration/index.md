@@ -3,6 +3,7 @@ title = "Fail fast on missing configuration"
 slug = "fail-fast-configuration"
 date = 2026-07-15T12:00:00+05:30
 description = "GetValue returns a silent default when a configuration key is missing. Here are two small extensions that throw at startup instead, and how to test them with the real binder."
+summary = "Make a missing configuration key throw at startup instead of returning a silent default."
 images = ["images/fail-fast-configuration.png"]
 tags = ["csharp", "dotnet", "testing"]
 draft = false
