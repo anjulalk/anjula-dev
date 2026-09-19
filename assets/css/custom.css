@@ -21,6 +21,30 @@ header nav ul li button {
   align-items: center;
 }
 
+/* Mobile header: the basic layout stacks the menu into a right-aligned column
+   on phones, which leaves five short lines beside an empty left side. Below sm
+   the name gets its own line and the menu runs as one left-aligned row beneath
+   it, so the header reads as a masthead with a nav strip. The class in the
+   selector is what outranks the theme's flex-col utility. */
+@media (max-width: 639px) {
+  header nav {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+    column-gap: 1rem;
+  }
+  header nav > div {
+    flex: 0 0 100%;
+  }
+  header nav > ul.list-none {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    column-gap: 1.25rem;
+    row-gap: 0.25rem;
+  }
+}
+
 /* Flush-align the article author-box social buttons with the text above.
    Each button and its icon span carry side padding, which indents the whole
    row. Strip the leading padding on the first of each. */
