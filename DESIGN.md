@@ -33,7 +33,8 @@ least 4.5:1 in its mode, and the muted steps sit at 4.6:1 against their own back
 
 Rules:
 
-- One accent per screen. Clay is the site's; moss and gold only appear where they carry meaning.
+- One accent per screen. Clay is the site's; moss and gold only appear where they carry meaning,
+  the ambient page wash below being the one decorative use of moss.
 - Never place `--ink-500` or lighter on `--wash`; move up a step instead.
 - Colour is never the only signal. Pair it with a word, an arrow or a shape.
 
@@ -66,15 +67,17 @@ Scale (rem, with the line height to use):
 | `--text-xs` | 0.75 | 1.5 | Eyebrows, footnotes, badges |
 | `--text-sm` | 0.875 | 1.55 | Metadata, captions, controls |
 | `--text-base` | 1 | 1.6 | Interface body |
-| `--text-reading` | 1.125 | 1.75rem line | Long form prose and page copy |
+| `--text-reading` | 1.125 | 1.75rem line | Page and app copy |
 | `--text-xl` | 1.25 | 1.45 | Section headings, card titles |
 | `--text-2xl` | 1.5 | 1.35 | Page headings |
 | `--text-4xl` | 2.25 | 1.15 | Article titles |
 | `--text-6xl` | 3.75 | 1.02 | A single hero figure, rarely |
 
-Reading text is 1.125rem on a **1.75rem line** (leading-7), which is what the blog uses and
-therefore what every project uses. Body copy sits at `--ink-700`; headings jump to `--ink`. Nothing
-between `--text-sm` and `--text-reading` is used, so 13px and 15px text do not exist in the system.
+Page and app copy is 1.125rem on a **1.75rem line** (leading-7). The blog's article prose is 1rem on
+that same 1.75rem line, which is what lands its headings exactly on the `--text-2xl` (1.5rem) and
+`--text-xl` (1.25rem) steps; do not raise it without rescaling the headings with it. Body copy sits
+at `--ink-700`; headings jump to `--ink`. Nothing between `--text-sm` and `--text-reading` is used
+except `--text-base`, so 13px and 15px text do not exist in the system.
 
 Rules:
 
@@ -86,6 +89,9 @@ Rules:
 - Do not mix a fourth family in. Emoji are allowed in content, not in chrome.
 - A header title is chrome, not a nameplate: Inter 600 at `--text-xl`, with the menu at Inter 500 and
   `--text-sm`. A serif title reads smaller than the sans menu beside it.
+- A wordmark may be two tones: the name in `--ink` and one closing part (a surname, or the domain
+  suffix) in `--clay`. Exactly two, chrome only, never inside body copy. fxtrack sets `fx` in ink and
+  `track` in clay; anjula.dev sets the first name in ink and the surname in clay.
 - Footers are chrome: Inter, small (`--text-sm`), in `--ink-500`, with no rule dividing them from the
   page. Neither project draws a hairline above its footer.
 
@@ -111,9 +117,73 @@ accepted ones, and every other project adopts them.
 - App screens (fxtrack) fill the same container and gutters, so the two sites line up when opened
   side by side.
 - Sections are separated by `--space-12` to `--space-16`, not by heavy rules.
-- Hairline rules (`1px solid var(--line)`) do the separating work. No shadows, no glows.
+- Hairline rules (`1px solid var(--line)`) do the separating work. No shadows or glows, and the
+  ambient wash below is the only gradient.
 
 Spacing is a 4px scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80. Nothing in between.
+
+## Page shell
+
+Every project shares one shell: a centred 80rem column with wide gutters, a header, an intro, the
+content, then a footer. The blog is the reference; the apps adopt the same regions and sizes.
+
+| Region | Vertical space | What it holds |
+| --- | --- | --- |
+| Header | `1.5rem`, `2.5rem` from 640px | Brand left, menu right |
+| Intro | follows the header | Lede, then a supporting line |
+| Content | sections `3rem` to `4rem` apart | Reading column, 65ch |
+| Footer | `2.5rem` | Copyright and attribution left, appearance control right |
+
+The shell is `--container` wide (80rem), centred, with `--gutter` padding: `1.5rem` on phones,
+`3.5rem` from 640px, `6rem` from 768px, `8rem` from 1024px.
+
+### Header
+
+Structure: one flex row, `justify-content: space-between`. The brand sits left, the menu right. From
+640px the row is vertically centred. On phones it wraps, the brand takes its own full-width line, and
+the menu becomes a left-aligned row beneath it.
+
+| Element | Family | Size | Weight | Colour |
+| --- | --- | --- | --- | --- |
+| Wordmark | Inter | `--text-xl` 1.25rem | 600 | `--ink`, closing part `--clay` |
+| Menu | Inter | `--text-sm` 0.875rem | 500 | `--ink`, hover `--clay` |
+| Header meta | Inter | `--text-sm` 0.875rem | 400 | `--ink-500` |
+
+Spacing: `padding-block` `1.5rem`, `2.5rem` from 640px. Menu items sit `1.75rem` apart from 640px
+(the inline-end margin), `0.125rem` after the last. On phones the menu row uses a `1.25rem` column
+gap and a `0.25rem` row gap.
+
+### Intro
+
+The block directly under the header, before the first content section. It is two lines: a lede and a
+supporting sentence.
+
+- Lede: one sentence, `--text-reading` (1.125rem on a 1.75rem line), in `--ink`.
+- Supporting line: `--text-reading`, `--ink-700`, `margin-top` `1.25rem`, `max-width` 42rem.
+
+On the blog the intro is prose, so it is Source Serif 4 at 1rem on a 1.75rem line: an `h1` on the
+`--text-4xl` step (2.25rem) and a paragraph.
+
+An article opens with its own intro: the title at `--text-4xl` (2.25rem), weight 700, `--ink`,
+`margin-bottom` 2rem; a meta line at `--text-base` (1rem), `--ink-500`, `margin-bottom` 2.5rem; then
+the feature image at `--radius-lg`, `margin-bottom` 1.5rem.
+
+### Footer
+
+Structure: one flex row, `justify-content: space-between`, `align-items: center`. The left column
+holds the copyright and, under it, the disclaimer or attribution; the right holds the appearance
+control.
+
+The footer is chrome, so it is Inter throughout.
+
+| Element | Size | Colour |
+| --- | --- | --- |
+| Copyright | `--text-sm` 0.875rem | `--ink-500` |
+| Attribution or disclaimer | `--text-xs` 0.75rem | `--ink-500` |
+| Appearance control | `--text-sm`, 3rem square | `--ink-700`, hover `--clay` |
+
+Spacing: `padding-block` `2.5rem`. The apps add `3rem` above the footer. No hairline divides the
+footer from the page.
 
 ## Surfaces and shape
 
@@ -125,11 +195,83 @@ Spacing is a 4px scale: 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80. Nothing in bet
 | `--radius-full` | 9999px | Avatars, pill buttons, tag pills |
 
 - Borders are `1px solid var(--line)`. A surface may use `--hair` for internal division.
+- The page background is paper plus the ambient wash, the system's one gradient. Its token,
+  geometry and rules are in **Ambient wash** below.
 - Media (photos, diagrams) gets `--radius-lg`; avatars and portraits are `--radius-full`.
 - `--radius-card` is an alias for `--radius-lg`, and is the name fxtrack uses for its panels.
 - Elevation is a background step (`--card` on `--paper`), not a shadow. The blog uses no shadow at
   all. An app card may take the single soft `--shadow-card` for a raised surface, and nothing else
   in the system is allowed one.
+
+## Ambient wash
+
+The page is paper, and the ambient wash is the light on it: two very soft radial glows in the top
+corners, under every page. It is the system's only gradient, and it is what makes a flat `--paper`
+read as a sheet in a room rather than a screen.
+
+It is published as one token, `--wash-ambient`, which holds the whole `background-image`, composed
+from two glow tokens so a project can retune one without copying the other:
+
+| Layer | Token | Geometry | Light | Dark | Fade |
+| --- | --- | --- | --- | --- | --- |
+| Clay glow | `--wash-glow-clay` | `900px 480px` ellipse at `8% -10%` | `--clay` `#c1603c` at 5% | `--clay` `#e7966e` at 5% | to transparent at 62% |
+| Moss glow | `--wash-glow-moss` | `760px 420px` ellipse at `92% -4%` | `--moss` `#78876a` at 4% | `--moss` `#98a688` at 4% | to transparent at 58% |
+
+- The centres sit above the top edge (`-10%`, `-4%`) so only the soft lower half is in frame, as if
+  the light source were just off screen.
+- Clay paints over moss; both sit over `--paper`. Layer order barely shows at these alphas, but it
+  is fixed so the corners never flip.
+- The glow tokens reference `--clay` and `--moss`. Because `.dark` remaps those two to their lighter
+  steps, the wash follows the mode with no second definition and no `dark:` variant in markup.
+
+Apply it to the page element, not to every surface:
+
+```css
+body {
+  background-color: var(--paper);
+  background-image: var(--wash-ambient);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+```
+
+`tokens.css` ships the same four declarations as the `.ambient` helper. `background-attachment:
+fixed` pins the glows to the viewport, so scrolling slides content under a steady light instead of
+dragging the light down the page.
+
+Rules:
+
+- One gradient only. Never a second gradient, a glow or a shadow on the page.
+- The wash is page chrome. Never paint it on a card, chip, media frame or input. Those sit flat on
+  `--card` or `--wash`.
+- Never raise an alpha above 5%. It is a hint of colour, not a colour field. If a mode needs more
+  presence, change the token once here, not in one project.
+- The 5% ceiling keeps every pairing intact: text still meets the palette's 4.5:1 floor against the
+  effective page, in both modes.
+- The default social card carries the same two hues at card scale (clay 12%, moss 10%), because a
+  single 1200x630 image has no scrolling page to light. It is generated by
+  `scripts/make-brand-assets.mjs`; when the wash hues change, rerun it.
+
+## Wordmark
+
+A project's name is set in two tones: the name in `--ink`, one closing part in `--clay`. It is
+chrome, so it stays Inter and never appears in body copy.
+
+| Project | Markup | Tones |
+| --- | --- | --- |
+| anjula.dev | `Anjula <span class="wordmark-accent">Karunarathne</span>` | first name ink, surname clay |
+| fxtrack | `fx<span class="text-clay-strong">track</span>` | head ink, tail clay |
+| cardstock | `card<span class="text-clay-strong">stock</span>` | head ink, tail clay |
+
+- Split once, at a real boundary: the first space, or the join between a head and a known suffix.
+  Two tones exactly, never three, never a gradient or an outline.
+- The accent tone is clay, so it steps with the mode: `#c1603c` in light, `#e7966e` in dark. On
+  anjula.dev the accent is the `wordmark-accent` class; the Tailwind projects use `text-clay-strong`,
+  which resolves to the same value.
+- The wordmark is a header control, not a nameplate: Inter 600 at `--text-xl` (1.25rem), above a menu
+  at Inter 500 and `--text-sm`. Never serif, never heavier than 600.
+- Never accent the whole word, never reach for moss or gold, and never split a one-word name into
+  more than two parts.
 
 ## Motion
 
@@ -149,13 +291,17 @@ where it is my experience. Applies to copy on every project, not just the blog.
 1. Copy `tokens.css` into the project (or link it) and set `font-family` from the three tokens.
 2. Tailwind v4: paste `tailwind-theme.css` into the stylesheet, after `@import 'tailwindcss'`.
 3. Load Source Serif 4, Inter and JetBrains Mono from the single request above, with `display=swap`.
-4. Add the paper background, `--container`, `--gutter` and `--measure` to the shell.
-5. Add `--shadow-card` only if the project raises cards; the blog does not.
-6. Check the palette pairings you actually use, in both modes, before shipping.
+4. Give the shell the paper background plus the ambient wash (`--wash-ambient`), `--container`,
+   `--gutter` and `--measure`.
+5. Set the wordmark in two tones if the project shows a name: the name in ink, the closing part in
+   clay.
+6. Add `--shadow-card` only if the project raises cards; the blog does not.
+7. Check the palette pairings you actually use, in both modes, before shipping.
 
 Projects following the system:
 
 | Project | How it consumes it |
 | --- | --- |
-| anjula.dev | Hugo/Congo scheme in `assets/css/schemes/paper.css`, values mirroring the tokens |
+| anjula.dev | Hugo/Congo scheme in `assets/css/schemes/paper.css` and `assets/css/custom.css`, values mirroring the tokens |
 | fxtrack | Tailwind v4 `@theme` in `packages/web/src/style.css`, values mirroring the tokens |
+| cardstock | Tailwind v4 `@theme` in `packages/web/src/style.css`, values mirroring the tokens |

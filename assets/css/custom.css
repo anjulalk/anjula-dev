@@ -178,10 +178,36 @@ div.my-1 a.rounded-md.border::before {
   --font-serif: 'Source Serif 4', 'Iowan Old Style', Georgia, 'Times New Roman', serif;
   --font-ui: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-code: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --wash: #f4f2ec;
+  /* The ambient wash (DESIGN.md). The scheme's primary and secondary steps stand
+     in for --clay and --moss; .dark swaps the glow pieces below. */
+  --wash-glow-clay: color-mix(in srgb, rgba(var(--color-primary-600), 1) 5%, transparent);
+  --wash-glow-moss: color-mix(in srgb, rgba(var(--color-secondary-500), 1) 4%, transparent);
+  --wash-ambient:
+    radial-gradient(900px 480px at 8% -10%, var(--wash-glow-clay), transparent 62%),
+    radial-gradient(760px 420px at 92% -4%, var(--wash-glow-moss), transparent 58%);
+}
+
+/* The scheme is a single Tailwind ramp and cannot carry both the light and the
+   dark wash, so mirror the surface here from static/design/tokens.css and let
+   the mode flip it. The ambient wash uses the dark clay and moss steps so the
+   glows stay visible on the warm charcoal. */
+.dark {
+  --wash: #33312c;
+  --wash-glow-clay: color-mix(in srgb, rgba(var(--color-primary-400), 1) 5%, transparent);
+  --wash-glow-moss: color-mix(in srgb, rgba(var(--color-secondary-400), 1) 4%, transparent);
 }
 
 body {
   font-family: var(--font-ui);
+}
+
+/* The page carries the system's one gradient: the ambient wash, fixed so the
+   glows read as light on the paper rather than an image that scrolls. */
+body {
+  background-image: var(--wash-ambient);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 /* Everything meant to be read, plus every heading, is a book serif. */
@@ -211,6 +237,15 @@ header nav a[rel='me'] {
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.011em;
+}
+
+/* The wordmark is two tones (DESIGN.md): the name in ink, the surname in clay,
+   so it echoes the accent the way fxtrack's does. */
+header nav a[rel='me'] .wordmark-accent {
+  color: rgba(var(--color-primary-600), 1);
+}
+.dark header nav a[rel='me'] .wordmark-accent {
+  color: rgba(var(--color-primary-400), 1);
 }
 
 header nav ul {
@@ -271,9 +306,106 @@ samp,
 }
 .chroma {
   border: 1px solid rgba(var(--color-neutral-200), 1);
+  background-color: var(--wash);
 }
 .dark .chroma {
   border-color: rgba(var(--color-neutral-600), 1);
+  background-color: var(--wash);
+}
+
+/* Chroma token colours. The theme draws the code surface from a monotonic ramp
+   (neutral-700 is its dark, wash 50 its light), but this scheme packs the light
+   and dark semantic steps into one ramp: neutral-700 here is the light-mode ink,
+   so it painted a mid grey that no token could reach 4.5:1 on. The surface is
+   set to --wash above, and the groups below are lifted to the step that clears
+   4.5:1 on it in each mode. Shades stay within the clay and moss families. */
+.chroma .k,
+.chroma .kd,
+.chroma .kn,
+.chroma .kp,
+.chroma .kr,
+.chroma .nc,
+.chroma .fm,
+.chroma .nn,
+.chroma .vc,
+.chroma .o,
+.chroma .ow {
+  color: rgba(var(--color-primary-700), 1);
+}
+.dark .chroma .k,
+.dark .chroma .kd,
+.dark .chroma .kn,
+.dark .chroma .kp,
+.dark .chroma .kr,
+.dark .chroma .nc,
+.dark .chroma .fm,
+.dark .chroma .nn,
+.dark .chroma .vc,
+.dark .chroma .o,
+.dark .chroma .ow {
+  color: rgba(var(--color-primary-300), 1);
+}
+.chroma .kc,
+.chroma .kt,
+.chroma .nv,
+.chroma .vi,
+.chroma .vm,
+.chroma .m,
+.chroma .mb,
+.chroma .mf,
+.chroma .mh,
+.chroma .mi,
+.chroma .il,
+.chroma .mo,
+.chroma .no,
+.chroma .ne,
+.chroma .vg,
+.chroma .nf,
+.chroma .se {
+  color: rgba(var(--color-secondary-700), 1);
+}
+.dark .chroma .kc,
+.dark .chroma .kt,
+.dark .chroma .nv,
+.dark .chroma .vi,
+.dark .chroma .vm,
+.dark .chroma .m,
+.dark .chroma .mb,
+.dark .chroma .mf,
+.dark .chroma .mh,
+.dark .chroma .mi,
+.dark .chroma .il,
+.dark .chroma .mo,
+.dark .chroma .no,
+.dark .chroma .ne,
+.dark .chroma .vg,
+.dark .chroma .nf,
+.dark .chroma .se {
+  color: rgba(var(--color-secondary-400), 1);
+}
+.chroma .c,
+.chroma .cm,
+.chroma .c1,
+.chroma .cs,
+.chroma .cp,
+.chroma .cpf,
+.chroma .ch,
+.chroma .gh,
+.chroma .gu,
+.chroma .gt {
+  color: rgba(var(--color-neutral-700), 1);
+}
+.dark .chroma .c,
+.dark .chroma .cm,
+.dark .chroma .c1,
+.dark .chroma .cs,
+.dark .chroma .cp,
+.dark .chroma .cpf,
+.dark .chroma .ch,
+.dark .chroma .gh,
+.dark .chroma .gu,
+.dark .chroma .gt {
+  color: rgba(var(--color-neutral-300), 1);
 }
 
 /* Rules and dividers stay hairline. */

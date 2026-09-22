@@ -74,3 +74,16 @@
   --color-down: #e08d92;
   --color-gold: #d3b45c;
 }
+
+/* The signature page background (see tokens.css and DESIGN.md): two very soft
+   glows, clay from the top-left and moss from the top-right. The glow tokens
+   reference the colour tokens, so it follows .dark without a second set of
+   values. Apply --wash-ambient as the page's background-image, with
+   `background-attachment: fixed` and no repeat. */
+:root {
+  --wash-glow-clay: color-mix(in srgb, var(--color-clay) 5%, transparent);
+  --wash-glow-moss: color-mix(in srgb, var(--color-moss) 4%, transparent);
+  --wash-ambient:
+    radial-gradient(900px 480px at 8% -10%, var(--wash-glow-clay), transparent 62%),
+    radial-gradient(760px 420px at 92% -4%, var(--wash-glow-moss), transparent 58%);
+}

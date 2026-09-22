@@ -13,6 +13,16 @@
   --hair: #f0ede4;
   --line: #dfdbd0;
 
+  /* Ambient wash (DESIGN.md): the signature page background. Two very soft
+     glows over the paper, clay from the top-left and moss from the top-right.
+     The glow tokens reference the palette, so .dark remaps them with no second
+     definition. Apply --wash-ambient as the page's background-image, fixed. */
+  --wash-glow-clay: color-mix(in srgb, var(--clay) 5%, transparent);
+  --wash-glow-moss: color-mix(in srgb, var(--moss) 4%, transparent);
+  --wash-ambient:
+    radial-gradient(900px 480px at 8% -10%, var(--wash-glow-clay), transparent 62%),
+    radial-gradient(760px 420px at 92% -4%, var(--wash-glow-moss), transparent 58%);
+
   /* Ink */
   --ink: #44403a;
   --ink-700: #5f5a51;
@@ -133,6 +143,15 @@
 
 .measure {
   max-width: var(--measure);
+}
+
+/* The signature page background: paper plus the ambient wash. Apply to the page
+   element (body or the app shell). */
+.ambient {
+  background-color: var(--paper);
+  background-image: var(--wash-ambient);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 @media (prefers-reduced-motion: reduce) {
