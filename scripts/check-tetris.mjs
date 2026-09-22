@@ -1,7 +1,8 @@
 // Headless harness for the homepage Tetris rain. Stubs just enough DOM to run
 // the real inline script, at desktop and phone sizes, then checks the
 // invariants that matter:
-//   1. no two falling pieces reserve the same cells (pieces piling into one hole)
+//   1. no two falling pieces reserve the same cells, and two falling pieces
+//      never overlap in flight (a faster piece resting on a slower one)
 //   2. line clears happen often enough to be worth watching
 //   3. the board is not resetting constantly, which reads as a wipe
 //   4. a phone gets a calmer rain than a desktop, not a downpour in a tiny well
@@ -23,6 +24,7 @@ function run(label, width, height) {
   let now = 0
   let rafCb = null
   let overlaps = 0
+  let liveOverlaps = 0
   let maxInFlight = 0
   let prev = null
   let thinFrames = 0
@@ -90,6 +92,24 @@ function run(label, width, height) {
           else seen.add(key)
         }
       }
+
+      // Pieces fall at their own speed, so a fast one can overtake a slow one.
+      // The reservations above can all be distinct while the live chips overlap
+      // in flight. Two cells in one column overlap when their float rows are
+      // within a cell of each other; exactly one apart is resting, not crashing.
+      for (let a = 0; a < pieces.length; a++) {
+        for (let b = a + 1; b < pieces.length; b++) {
+          const pa = pieces[a]
+          const pb = pieces[b]
+          for (const ca of pa.cells) {
+            for (const cb of pb.cells) {
+              if (pa.x + ca.x !== pb.x + cb.x) continue
+              const dy = Math.abs(pa.y + ca.y - (pb.y + cb.y))
+              if (dy < 1 - 1e-6) liveOverlaps++
+            }
+          }
+        }
+      }
     },
   }
   globalThis.document = {
@@ -136,6 +156,7 @@ function run(label, width, height) {
     perMinute,
     resetsPerMin,
     overlaps,
+    liveOverlaps,
     maxInFlight,
     worst,
     avg: total / FRAMES,
@@ -155,6 +176,10 @@ for (const r of results) {
   console.log(`  per 30s: ${r.buckets.join(', ')}`)
   if (r.overlaps > 0) {
     console.error(`  FAIL: ${r.overlaps} overlapping reservations between falling pieces`)
+    failed = true
+  }
+  if (r.liveOverlaps > 0) {
+    console.error(`  FAIL: ${r.liveOverlaps} live cell overlaps between falling pieces`)
     failed = true
   }
   if (r.perMinute < MIN_EVENTS_PER_MIN) {

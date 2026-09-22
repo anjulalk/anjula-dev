@@ -7,7 +7,9 @@
      on the board it would leave behind, and the best few are explored one
      piece further so the animation sets up line clears instead of raining
      pieces at random. The floor starts with rows that are one piece short of
-     complete, so the clears start early and stay visible. */}}
+     complete, so the clears start early and stay visible. Falling pieces are
+     solid to each other, so a faster chip rests on the one ahead of it rather
+     than overtaking it and landing in its cell. */}}
 {{ define "main" }}
   {{ partial "home/page.html" . }}
   <div class="tetris-rain"><canvas id="tetris-rain" aria-hidden="true"></canvas></div>
@@ -29,6 +31,7 @@
     var saved = null;         // scratch copy for the search
     var preClear = null;      // rows as they were before the last clear, for the animation
     var full = null, effCells = null, heights = null; // scratch for scoring
+    var columnTop = null;     // highest occupied cell per column, for the fall
     var stats = { clears: 0, resets: 0, placed: 0 }; // exposed to the test probe
     var pieces = [];
     var activeClear = null;   // the clear being animated, if any
@@ -290,6 +293,36 @@
 
     /* ---------- pieces ---------- */
 
+    /* A falling piece must rest on the pieces below it, not fall through them.
+       Each piece descends at its own speed, so without this a fast chip would
+       overtake a slow one, overlap it and lock into a cell its neighbour was
+       still heading for. Resolve from the lowest piece up: each is clamped so
+       it sits on the highest occupied cell in every column it covers, then that
+       piece is folded into the surface for the pieces above it. */
+    function resolveFall() {
+      var x, y, i, k;
+      for (x = 0; x < COLS; x++) columnTop[x] = ROWS;
+      for (y = 0; y < ROWS; y++) {
+        for (x = 0; x < COLS; x++) {
+          if (grid[y * COLS + x] && y < columnTop[x]) columnTop[x] = y;
+        }
+      }
+      var order = pieces.slice().sort(function (a, b) {
+        return (b.y + shapeHeight(b.cells)) - (a.y + shapeHeight(a.cells));
+      });
+      for (k = 0; k < order.length; k++) {
+        var p = order[k];
+        for (i = 0; i < p.cells.length; i++) {
+          var limit = columnTop[p.x + p.cells[i].x] - p.cells[i].y - 1;
+          if (limit < p.y) p.y = limit;
+        }
+        for (i = 0; i < p.cells.length; i++) {
+          var topY = p.y + p.cells[i].y;
+          if (topY < columnTop[p.x + p.cells[i].x]) columnTop[p.x + p.cells[i].x] = topY;
+        }
+      }
+    }
+
     function spawn() {
       var pick = chooseDrop();
       if (!pick || pick.y < 0) { reset(); return; }
@@ -394,6 +427,7 @@
         full = new Uint8Array(ROWS);
         effCells = new Int32Array(ROWS);
         heights = new Int32Array(COLS);
+        columnTop = new Float64Array(COLS);
         board = grid;
         // Fewer pieces fall on a small board, so a phone shows the same calm
         // rain a laptop does instead of a downpour into a narrow well.
@@ -534,13 +568,12 @@
         pending--;
         spawn();
       }
+      for (var m = 0; m < pieces.length; m++) pieces[m].y += pieces[m].vy * dt;
+      resolveFall();
       var list = pieces.slice();
       for (var i = list.length - 1; i >= 0; i--) {
         var p = list[i];
         if (pieces.indexOf(p) < 0) continue; // a reset replaced the board
-        p.y += p.vy * dt;
-        // Fade in over the first couple of rows, so nothing appears abruptly.
-        p.alpha = Math.max(0, Math.min(1, (p.y + 1.6) / 2.6));
         if (p.y >= p.target) {
           lock(p);
           pieces.splice(pieces.indexOf(p), 1);
@@ -548,8 +581,16 @@
           spawn();
         }
       }
+      // A lock spawns its replacement the same frame, and a clear can nudge the
+      // pieces still falling, so settle once more before anything is drawn.
+      resolveFall();
+      for (m = 0; m < pieces.length; m++) {
+        // Fade in over the first couple of rows, so nothing appears abruptly.
+        pieces[m].alpha = Math.max(0, Math.min(1, (pieces[m].y + 1.6) / 2.6));
+      }
       // Test probe: the harness asserts that no two falling pieces reserve the
-      // same cells. Harmless in the browser, where the flag is never set.
+      // same cells, and that no two overlap while still falling. Harmless in
+      // the browser, where the flag is never set.
       if (window.__tetrisProbe) window.__tetrisProbe(pieces, grid, ROWS, COLS, stats);
     }
 
