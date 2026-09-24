@@ -1,5 +1,10 @@
 # anjula.dev
 
+[![Build and deploy](https://github.com/anjulalk/anjula-dev/actions/workflows/hugo.yml/badge.svg)](https://github.com/anjulalk/anjula-dev/actions/workflows/hugo.yml)
+[![Built with Hugo](https://img.shields.io/badge/built%20with-Hugo-5f5a51)](https://gohugo.io/)
+[![Design tokens](https://img.shields.io/badge/design%20tokens-published-c1603c)](https://anjula.dev/design/tokens.css)
+[![License: MIT](https://img.shields.io/badge/license-MIT-c1603c)](LICENSE)
+
 Personal site of **Anjula Karunarathne**: writing and projects on Azure, .NET, TypeScript and
 front-end work. Served at <https://anjula.dev>.
 
@@ -46,4 +51,5 @@ hugo --minify --destination ./public-verify
 
 ## Credits
 
-The theme is MIT licensed. Article text and images are mine.
+The site's code and configuration are MIT licensed, see `LICENSE`. Article text and images are mine
+and are not covered by it. The Congo theme is MIT licensed.
