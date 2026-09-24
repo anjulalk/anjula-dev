@@ -8,10 +8,16 @@ updates:
     labels:
       - dependencies
     groups:
-      minor-and-patch:
+      security:
+        applies-to: security-updates
+        patterns: ['*']
+      minor:
         applies-to: version-updates
         update-types:
           - minor
+      patch:
+        applies-to: version-updates
+        update-types:
           - patch
 
   # The Congo theme is a submodule, so it moves with the theme's own releases.
