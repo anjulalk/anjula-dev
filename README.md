@@ -1,9 +1,9 @@
 # anjula.dev
 
-[![Build and deploy](https://github.com/anjulalk/anjula-dev/actions/workflows/hugo.yml/badge.svg)](https://github.com/anjulalk/anjula-dev/actions/workflows/hugo.yml)
-[![Built with Hugo](https://img.shields.io/badge/built%20with-Hugo-5f5a51)](https://gohugo.io/)
-[![Design tokens](https://img.shields.io/badge/design%20tokens-published-c1603c)](https://anjula.dev/design/tokens.css)
-[![License: MIT](https://img.shields.io/badge/license-MIT-c1603c)](LICENSE)
+[![build](https://img.shields.io/github/actions/workflow/status/anjulalk/anjula-dev/hugo.yml?branch=main&label=build&labelColor=44403a&style=flat-square)](https://github.com/anjulalk/anjula-dev/actions/workflows/hugo.yml)
+[![hugo](https://img.shields.io/badge/hugo-0.166-5f5a51?labelColor=44403a&style=flat-square)](https://gohugo.io/)
+[![tokens](https://img.shields.io/badge/tokens-published-c1603c?labelColor=44403a&style=flat-square)](https://anjula.dev/design/tokens.css)
+[![license](https://img.shields.io/badge/license-MIT-c1603c?labelColor=44403a&style=flat-square)](LICENSE)
 
 Personal site of **Anjula Karunarathne**: writing and projects on Azure, .NET, TypeScript and
 front-end work. Served at <https://anjula.dev>.
