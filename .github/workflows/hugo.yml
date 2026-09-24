@@ -3,13 +3,18 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 permissions:
   contents: read
   pages: write
   id-token: write
 concurrency:
-  group: pages
+  # A pull request gets its own group, so a review build never queues in front
+  # of the deployment that main is waiting on.
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 defaults:
   run:
@@ -114,6 +119,7 @@ jobs:
 
       - name: Build
         run: |
+          set -o pipefail
           echo "Building the project..."
           # The base URL comes from config/_default/hugo.toml. Overriding it with
           # the Pages output would publish http:// URLs in the sitemap, og:url
@@ -122,19 +128,43 @@ jobs:
             --gc \
             --minify \
             --cleanDestinationDir \
-            --cacheDir "${{ runner.temp }}/.cache/hugo"
+            --cacheDir "${{ runner.temp }}/.cache/hugo" 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      # A warning is a broken link, a missing image or a template that fell
+      # through, and it reaches the live site if nobody reads it.
+      - name: Fail on a warning or an error
+        run: |
+          if grep -qiE '^(WARN|ERROR)' "$RUNNER_TEMP/build.log"; then
+            echo "the build printed a warning or an error:"
+            grep -iE '^(WARN|ERROR)' "$RUNNER_TEMP/build.log"
+            exit 1
+          fi
+          echo "the build was clean"
 
       - name: Check the build output
         run: |
           echo "Checking the built site..."
           test -f public/index.html
           test -f public/sitemap.xml
+          test -f public/index.xml
+          test -f public/404.html
           test -f public/design/tokens.css
           test -f public/design/tailwind-theme.css
+          test -f public/images/share.png
           grep -q "Sitemap:" public/robots.txt
           grep -q "og:image" public/index.html
           echo "pages: $(find public -name '*.html' | wc -l)"
           echo "size:  $(du -sh public | cut -f1)"
+
+      # Pages serves one deployment and that one belongs to main, so a pull
+      # request gets the built site as a downloadable artifact instead.
+      - name: Attach the built site to the run
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: public
+          retention-days: 7
 
       - name: Cache save
         uses: actions/cache/save@v6
@@ -150,6 +180,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
