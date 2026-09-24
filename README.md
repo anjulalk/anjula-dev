@@ -11,6 +11,15 @@ front-end work. Served at <https://anjula.dev>.
 
 Built with [Hugo](https://gohugo.io/) and the [Congo](https://github.com/jpanther/congo) theme.
 
+## Screenshots
+
+The homepage preview uses synthetic intro copy. The article preview uses the repository's
+non-sensitive technical example. Both images were captured from the local Hugo build.
+
+![Synthetic homepage preview with the paper and clay design, navigation, recent writing cards, and warm ambient background](docs/home.png)
+
+![Article page preview showing a paper cover, article title, metadata, and the serif reading column](docs/article.png)
+
 ## Local development
 
 ```bash
