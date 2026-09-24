@@ -1,6 +1,7 @@
 # anjula.dev
 
 [![build](https://img.shields.io/github/actions/workflow/status/anjulalk/anjula-dev/hugo.yml?branch=main&label=build&labelColor=44403a&style=flat-square)](https://github.com/anjulalk/anjula-dev/actions/workflows/hugo.yml)
+[![release](https://img.shields.io/github/v/release/anjulalk/anjula-dev?label=release&labelColor=44403a&color=5f5a51&style=flat-square)](https://github.com/anjulalk/anjula-dev/releases/latest)
 [![hugo](https://img.shields.io/badge/hugo-0.166-5f5a51?labelColor=44403a&style=flat-square)](https://gohugo.io/)
 [![tokens](https://img.shields.io/badge/tokens-published-c1603c?labelColor=44403a&style=flat-square)](https://anjula.dev/design/tokens.css)
 [![license](https://img.shields.io/badge/license-MIT-c1603c?labelColor=44403a&style=flat-square)](LICENSE)
@@ -48,6 +49,10 @@ existing install.
 ```bash
 hugo --minify --destination ./public-verify
 ```
+
+## Releases
+
+The site deploys from `main`. Merge a pull request labeled `release:patch`, `release:minor` or `release:major` to update `VERSION`, create a Git tag and publish a GitHub release. You can also dispatch the `release.yml` workflow with a version bump.
 
 ## Credits
 
